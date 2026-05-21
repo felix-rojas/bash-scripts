@@ -1,0 +1,6 @@
+# script will skip empty lines and users with no passwords
+# format is as follows:
+# username password 
+alice SecretPass123!
+bob AnotherPassword456
+charlie Pass789
