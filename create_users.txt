@@ -1,0 +1,14 @@
+# Format: user_id "User full name" user_directory user_shell user_group user_password is_sudoer
+# use a the hyphen char to indicate omission 
+
+# All fields provided, is a sudoer
+frojas "Felix Rojas" /home/frojas /bin/bash developers SecurePass123! yes
+
+# Omitting shell and group, but providing password and sudoer flag
+asmith "Alice Smith" /home/asmith - - StrongPass456! yes
+
+# Omitting the password completely, but making them a sudoer
+bjones "Bob Jones" /opt/bjones /bin/bash - - yes
+
+# standard user (not a sudoer), using system defaults for everything else
+cwhite "Charlie White" /home/cwhite - - - no
