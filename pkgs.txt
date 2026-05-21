@@ -1,0 +1,16 @@
+# Network utilities
+net-tools
+ipcalc
+iputils-ping
+
+# Shells
+fish
+
+# Writing utils
+nano vim 
+
+# System utilities
+neofetch tree finger find
+
+# Compilers
+gcc
