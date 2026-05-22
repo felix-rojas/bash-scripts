@@ -28,9 +28,19 @@ fi
 # Convert to absolute path to prevent broken symlinks
 TARGET_DIR=$(realpath "$TARGET_DIR")
 
+# apliqué 755 cuando debería de ser 705
+# es decir, otros usuarios tienen permiso 
 echo "Applying permissions (755 for directories, 644 for files) in $TARGET_DIR..."
-find "$TARGET_DIR" -type d -exec chmod 755 {} +
+find "$TARGET_DIR" -type d -exec chmod 705 {} +
 find "$TARGET_DIR" -type f -exec chmod 644 {} +
+
+# Grant execute (+x) permissions to all parent directories so Apache can traverse to the target
+echo "Ensuring parent directories are traversable by Apache..."
+PARENT_DIR="$TARGET_DIR"
+while [[ "$PARENT_DIR" != "/" ]]; do
+    chmod a+x "$PARENT_DIR"
+    PARENT_DIR=$(dirname "$PARENT_DIR")
+done
 
 # .htaccess file
 HTACCESS_FILE="$TARGET_DIR/.htaccess"
@@ -60,6 +70,24 @@ if [[ ! -d "/etc/apache2" ]]; then
     echo "Check if apache2 is installed!"
     echo "Creating output directory: /etc/apache2"
     mkdir -p "/etc/apache2"
+fi
+
+# Create and enable a specific Apache configuration for this directory
+APACHE_CONF="/etc/apache2/conf-available/${ALIAS}_site.conf"
+echo "Generating Apache configuration at $APACHE_CONF..."
+cat <<EOF > "$APACHE_CONF"
+<Directory "$TARGET_DIR">
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>
+EOF
+
+# Enable the new configuration if a2enconf is available (Debian/Ubuntu systems)
+if command -v a2enconf &> /dev/null; then
+    a2enconf "${ALIAS}_site"
+else
+    echo "Warning: a2enconf not found. You may need to manually include $APACHE_CONF in your httpd.conf."
 fi
 
 # create htpasswd file
@@ -93,4 +121,4 @@ done < "$USERS_FILE"
 echo "Restarting apache2 service..."
 service apache2 restart
 
-echo "Setup complete! Website ${ALIAS} is password protected and ready."
+echo "Setup complete! Website ${ALIAS} is password protected and ready.
